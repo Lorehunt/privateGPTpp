@@ -39,7 +39,7 @@ def getNews(num):
                 pass
             else:
                 finalText += text
-        newsList.append(finalText)
+        newsList.append({"article":finalText, "URL":pageUrl})
         count += 1
     
     return newsList

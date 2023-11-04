@@ -63,7 +63,11 @@
                         // Remove old news
                         oldHeadings = document.querySelectorAll(".newsLocation");
                         oldParagraphs = document.querySelectorAll(".newsText");
+                        oldURLs = document.querySelectorAll(".newsURL");
 
+                        for(let URL of oldURLs){
+                            URL.remove();
+                        }
                         for(let heading of oldHeadings){
                             heading.remove();
                         }
@@ -82,24 +86,25 @@
                             promiseChain = promiseChain.then(() => {
                                 return articleFetch(i);   
                             }).then(data => {
-                                // The loop is unnecessary in current implementation (only one entry is fetched), it is kept to support further changes
-                                for(let key in data){
-                                    //Skip if data is corrupted
-                                    if(key == "NONE" || data[key] == "NONE"){
-                                        continue;
-                                    }
-
-                                    // Display information on the web page
-                                    // Replace this code to handle the fetched json data as needed (display on map?) <<<=== !!!
-                                    let location = document.createElement('h2');
-                                    location.className = "newsLocation";
-                                    location.textContent = key;
-                                    let info = document.createElement('p');
-                                    info.textContent = data[key];
-                                    info.className = "newsText";
-                                    document.body.append(location);
-                                    document.body.append(info);
+                                //Skip if data is corrupted
+                                if(data["summary"] == "NONE" || data["location"] == "NONE"){
+                                    return;
                                 }
+                                // Display information on the web page
+                                // Replace this code to handle the fetched json data as needed (display on map?) <<<=== !!!
+                                let location = document.createElement('h2');
+                                location.className = "newsLocation";
+                                location.textContent = data["location"];
+                                let url = document.createElement('h3');
+                                url.className = "newsURL";
+                                url.textContent = data["URL"];
+                                let info = document.createElement('p');
+                                info.textContent = data["summary"];
+                                info.className = "newsText";
+                                document.body.append(location);
+                                document.body.append(url);
+                                document.body.append(info);
+                
                         }).catch(error => {throw error;});
                         }
                     })

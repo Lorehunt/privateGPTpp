@@ -315,6 +315,7 @@ class news_list():
     news_list object represents a list of recently fetched news
     '''
     def __init__(self, news_num):
+        # List of the fetched article URLs
         self.news_list = []
         self.processed_buffer = {}
         self.buffer_file = "./article_buffer.json"
@@ -323,8 +324,8 @@ class news_list():
             # Read the existing JSON data from the buffer file
             with open(self.buffer_file, 'r') as fp:
                 article_data = json.load(fp)
-                for article in article_data:
-                    entry = {article : article_data[article]}
+                for article_url in article_data:
+                    entry = {article_url : article_data[article_url]}
                     self.processed_buffer.update(entry)
         except FileNotFoundError:
             print(f"No buffered data")
@@ -338,26 +339,37 @@ class news_list():
         Repopulate the article list
         '''
         print(f"Updating the list: fetching {self.news_num} news...\n")
-        articles = getNews(self.news_num)
+        # Empty the list
+        self.news_list = []
+        articles_list = getNews(self.news_num)
         i = 0
-        for article in articles:
-            self.news_list.append(article)
+        for entry in articles_list:
+            self.news_list.append(entry)
             self.post_news(i)
             i += 1
 
     def post_news(self, num):
         '''
-        Return {location:summary} for an aricle;
+        Return a dict with "URL", "location" and "summary" keys;
         If not buffered, call llm to process the article
         '''
-        article = self.news_list[num]
-        if article in self.processed_buffer:
-            return {self.processed_buffer[article]["location"] : self.processed_buffer[article]["summary"]}
+        entry = self.news_list[num]
+
+        article_url = entry["URL"]
+
+        # Retrieve data for the URL from the buffer if available
+        if article_url in self.processed_buffer:
+            return {"URL" : article_url, "location" : self.processed_buffer[article_url]["location"], "summary" : self.processed_buffer[article_url]["summary"]}
+        
+        elif(len(entry["article"]) == 0):
+            location = "NONE"
+            summary = "NONE"
+
         else:
             try:
                 file_name = f"../source_documents/context.txt"
                 with open(file_name, "w") as fp:
-                    fp.write(article)
+                    fp.write(entry["article"])
             except FileNotFoundError:
                 print(f"Could not create file {file_name}")
                 exit()
@@ -380,25 +392,21 @@ class news_list():
             if("I don't know" in location or "Unhelpful Answer" in location):
                 location = "NONE"
 
-            # Epoch current time (seconds)
-            timestamp = int(time.time())
-            
-            # 36 hours in seconds
-            storing_time = 36*60*60
-
-            # Remove entries older then 36 hours
-            if (len(self.processed_buffer) > 100):
-                for article in self.processed_buffer:
-                    if(timestamp - article["timestamp"] >= storing_time):
-                        self.processed_buffer.pop(article)
-
-            self.processed_buffer[article] = {"location" : location , "summary" : summary, "timestamp" : timestamp}
-
-            # Write the updated data back to the file
-            with open(self.buffer_file, 'w') as fp:
-                json.dump(self.processed_buffer, fp, indent=4)
-
-            return {location : summary}
+        # Epoch current time (seconds)
+        timestamp = int(time.time())
+        
+        # 36 hours in seconds
+        storing_time = 36*60*60
+        # Remove entries older then 36 hours
+        if (len(self.processed_buffer) > 100):
+            for article in self.processed_buffer:
+                if(timestamp - article["timestamp"] >= storing_time):
+                    self.processed_buffer.pop(article)
+        self.processed_buffer[article_url] = {"location" : location , "summary" : summary, "article" : entry["article"], "timestamp" : timestamp}
+        # Write the updated data back to the file
+        with open(self.buffer_file, 'w') as fp:
+            json.dump(self.processed_buffer, fp, indent=4)
+        return {"URL" : article_url, "location" : self.processed_buffer[article_url]["location"], "summary" : self.processed_buffer[article_url]["summary"]}
 
     def length(self):
         return len(self.news_list)
@@ -433,8 +441,8 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(port=3000, host='0.0.0.0', debug=True)
+    app.run(port=30002, host='0.0.0.0', debug=True)
     
     
 
-    # docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --rm -it -v $HOME/data:/data -p 3000:3000/tcp gptnews
+    # docker run --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 --rm -it -v $HOME/data:/data -p 30002:30002/tcp gptnews
