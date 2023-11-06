@@ -50,9 +50,6 @@ def getNews(num):
             #Skip if the article is empty/too short
             continue
         newsList.append({"article":finalText, "URL":pageUrl})
-        print("")
-        print(finalText)
-        print("")
 
         count += 1
     
