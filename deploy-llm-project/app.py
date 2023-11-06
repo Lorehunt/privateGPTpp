@@ -384,9 +384,11 @@ class news_list():
                     shutil.rmtree(item_path)
             ingest()
             summary = auto_call_model("Summary of the news")
-            if("I don't know" in summary or "Unhelpful Answer" in summary):
+            if("Unhelpful Answer" in summary):
                 parts = summary.split("Unhelpful Answer")
                 summary = parts[0]
+            if("I don't know" in summary or len(summary)==0):
+                summary = "NONE"
 
             location = auto_call_model("Geographical location or country of the event using maximum 3 words")
             if("I don't know" in location or "Unhelpful Answer" in location):
