@@ -39,7 +39,21 @@ def getNews(num):
                 pass
             else:
                 finalText += text
+
+        # Remove BBC quotes 
+        for substring in ["2023 BBC", "The BBC is not responsible for the content of external sites.", "Read about our approach to external linking.", 
+                          "Sign up for our morning newsletter and get BBC News in your inbox.", "This video can not be played", "Â©"]:
+            if(substring in finalText):
+                finalText = finalText.replace(substring, "")
+
+        if (len(finalText) < 150):
+            #Skip if the article is empty/too short
+            continue
         newsList.append({"article":finalText, "URL":pageUrl})
+        print("")
+        print(finalText)
+        print("")
+
         count += 1
     
     return newsList
@@ -53,4 +67,4 @@ def getNews(num):
 #print(body_content)
 
 if __name__ == "__main__":
-    print(str(getNews(2)))
+    print(str(getNews(20)))
