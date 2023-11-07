@@ -14,7 +14,7 @@
 
                     // Define a fetch attempt function
                     function fetchAttempt() {
-                        fetch(`http://vs-c2.cs.uit.no:30002/fetch_news?article_num=${num}`)
+                        fetch(`http://vs-c2.cs.uit.no:30002/fetch_news_fake?article_num=${num}`)
 
                         .then(response => {
                             if(!response.ok){
@@ -48,7 +48,7 @@
             // Setup a news fetcher button
             const button = document.getElementById("fetcher");
             button.addEventListener("click", function(){
-                fetch(`http://vs-c2.cs.uit.no:30002/news_request`)
+                fetch(`http://vs-c2.cs.uit.no:30002/news_request_fake`)
 
                     .then(response => {
                         if(!response.ok){

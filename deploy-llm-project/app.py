@@ -318,6 +318,7 @@ class news_list():
         # List of the fetched article URLs
         self.news_list = []
         self.processed_buffer = {}
+        self.fake_news_list = []
         self.buffer_file = "./article_buffer.json"
 
         try:
@@ -332,7 +333,7 @@ class news_list():
 
         self.news_num = news_num
         print(f"Creating a new article list")
-        self.update()
+        #self.update()
 
     def update(self):
         '''
@@ -413,12 +414,13 @@ class news_list():
     def length(self):
         return len(self.news_list)
 
+
 def create_app():
     app = Flask(__name__)
     CORS(app)
     
     # Change number of fetched news here
-    news = news_list(20)
+    news = news_list(30)
 
     @app.route('/')
     def showNews():
@@ -436,8 +438,25 @@ def create_app():
         article_num = int(request.args.get('article_num'))
         json_string = json.dumps(news.post_news(article_num))
         return json_string
+    
+    @app.route('/fetch_news_fake')
+    def fetch_news_fake():
+        article_num = int(request.args.get('article_num'))
+        URL = news.fake_news_list[article_num]["URL"]
+        dct = {"URL" : URL, "location" : news.processed_buffer[URL]["location"], "summary" : news.processed_buffer[URL]["summary"]}
+        json_string = json.dumps(dct)
+        return json_string
+  
 
+    @app.route('/news_request_fake')
+    def news_request_fake():
+        for URL in news.processed_buffer.keys():
+            if {"URL" : URL, "article": news.processed_buffer[URL]["article"]} not in news.fake_news_list:
+                news.fake_news_list.append({"URL" : URL, "article" : news.processed_buffer[URL]["article"]})
+        return str(len(news.fake_news_list))
+    
     return app
+    
         
 
 
